@@ -1,0 +1,9 @@
+node_modules
+.git
+.env
+.env.*
+!.env.sample
+dist
+coverage
+Dockerfile
+.dockerignore
