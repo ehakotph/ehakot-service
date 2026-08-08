@@ -35,6 +35,8 @@ const sequelize: Sequelize = new Sequelize(database_url, {
     },
 });
 
+// sequelize.sync({ force: true })
+
 export async function testDatabaseConnection(): Promise<void> {
     try {
         await sequelize.authenticate();

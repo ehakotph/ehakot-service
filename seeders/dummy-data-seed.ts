@@ -51,8 +51,8 @@ async function seed() {
             const cityName = city.name.replace(/\s+/g, '').toLowerCase();
             const cityBarangays = barangaysByCity.get(city.id) || [];
             
-            // Admins (5 per city)
-            for (let i = 1; i <= 5; i++) {
+            // Admins (3 per city)
+            for (let i = 1; i <= 3; i++) {
                 accountsData.push({
                     name: `${city.name} Admin ${i}`,
                     role: 'admin',
@@ -85,8 +85,8 @@ async function seed() {
                 });
             }
 
-            // Users (15 per city)
-            for (let i = 1; i <= 15; i++) {
+            // Users (10 per city)
+            for (let i = 1; i <= 10; i++) {
                 const randomBrgy = cityBarangays.length > 0 ? cityBarangays[Math.floor(Math.random() * cityBarangays.length)] : 'Unknown Barangay';
                 accountsData.push({
                     name: `${city.name} User ${i}`,
