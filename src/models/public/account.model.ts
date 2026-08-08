@@ -8,7 +8,13 @@ import {
     Model,
     BeforeUpdate,
     BeforeCreate,
+    BelongsTo,
+    HasMany,
 } from 'sequelize-typescript';
+import City from './city.model';
+import Notification from './notification.model';
+import GarbageReport from './garbage-report.model';
+import Collection from './collection.model';
 
 @Table({
     schema: 'public',
@@ -23,15 +29,31 @@ class Account extends Model<Account, Partial<Account>> {
 
     @Column({
         type: DataType.STRING,
-        allowNull: false,
+        allowNull: true,
     })
-    declare name: string;
+    declare name: string | null;
+
+    @Column({
+        type: DataType.STRING(10),
+        allowNull: false,
+        validate: {
+            isIn: [['superadmin', 'admin', 'driver', 'user']],
+        },
+        defaultValue: 'user',
+    })
+    declare role: string;
 
     @Column({
         type: DataType.STRING(800),
-        allowNull: false,
+        allowNull: true,
     })
-    declare password: string;
+    declare password: string | null;
+
+    @Column({
+        type: DataType.DATE,
+        allowNull: true,
+    })
+    declare birthdate: Date | null;
 
     @Index
     @Column({
@@ -50,19 +72,42 @@ class Account extends Model<Account, Partial<Account>> {
     declare email: string;
 
     @Column({
-        type: DataType.STRING(10),
-        allowNull: false,
-        validate: {
-            isIn: [['superadmin', 'admin', 'user']],
-        },
-        defaultValue: 'user',
+        type: DataType.STRING,
+        allowNull: true,
     })
-    declare role: string;
+    declare contact_number: string | null;
+
+    @Column({
+        type: DataType.JSON,
+        allowNull: true,
+    })
+    declare location: {
+        lat: number;
+        lng: number;
+    } | null;
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true,
+    })
+    declare city_id: number | null;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    declare location_city: string | null;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    declare location_barangay: string| null;
 
     @BeforeUpdate
     @BeforeCreate
     static async hashPassword(instance: Account) {
-        if (instance.changed('password')) {
+        if (instance.changed('password') && instance.password) {
             if (!instance.password.startsWith('$2')) {
                 const saltWorkFactor: number = env.SALT_WORK_FACTOR;
                 const salt = await bcryptjs.genSalt(saltWorkFactor);
@@ -74,6 +119,8 @@ class Account extends Model<Account, Partial<Account>> {
     }
 
     async comparePassword(password: string): Promise<boolean> {
+        if (!this.password) return false;
+
         return await bcryptjs.compare(password, this.password);
     }
 
@@ -82,6 +129,18 @@ class Account extends Model<Account, Partial<Account>> {
         const { password, ...data } = super.toJSON() as Account;
         return data;
     }
+
+    @BelongsTo(() => City, 'city_id')
+    declare city: City;
+
+    @HasMany(() => Notification, 'user_id')
+    declare notifications: Notification[];
+
+    @HasMany(() => GarbageReport, 'user_id')
+    declare garbage_reports: GarbageReport[];
+
+    @HasMany(() => Collection, 'user_id')
+    declare collections: Collection[];
 }
 
 export default Account;

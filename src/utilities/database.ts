@@ -1,6 +1,12 @@
 import { Sequelize } from 'sequelize-typescript';
 import { env } from '@config/env';
 import Account from '@/models/public/account.model';
+import Barangay from '@/models/public/barangay.model';
+import City from '@/models/public/city.model';
+import Collection from '@/models/public/collection.model';
+import GarbageReport from '@/models/public/garbage-report.model';
+import Notification from '@/models/public/notification.model';
+import Truck from '@/models/public/truck.model';
 
 const database_url: string = env.DATABASE_URL;
 // Vercel doesn't support dynamic model path so we import models manually
@@ -17,7 +23,7 @@ if (env.DATABASE_USE_SSL) {
 
 const sequelize: Sequelize = new Sequelize(database_url, {
     logging: false,
-    models: [Account],
+    models: [Account, Barangay, City, Collection, GarbageReport, Notification, Truck],
     dialectOptions,
     define: {
         timestamps: true,

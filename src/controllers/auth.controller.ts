@@ -1,15 +1,12 @@
 import { type Request, type Response } from 'express';
 import Account from '../models/public/account.model';
 import { sign_jwt } from '../utilities/jwt';
+import City from '@/models/public/city.model';
 
 export const authController = {
     async register(req: Request, res: Response) {
         try {
-            const { name, email, password } = req.body;
-
-            if (!name || !email || !password) {
-                return res.status(400).json({ message: 'Name, email, and password are required' });
-            }
+            const { email, birthdate } = req.body;
 
             const existingAccount = await Account.findOne({ where: { email } });
             
@@ -18,10 +15,8 @@ export const authController = {
             }
 
             const account = await Account.create({
-                name,
                 email,
-                password,
-                role: 'user',
+                birthdate: new Date(birthdate),
             });
 
             const token = sign_jwt({ id: account.id, email: account.email });
@@ -32,8 +27,13 @@ export const authController = {
                 user: {
                     id: account.id,
                     name: account.name,
+                    birthdate: account.birthdate,
                     email: account.email,
                     role: account.role,
+                    city_id: account.city_id,
+                    location_barangay: account.location_barangay,
+                    location_city: account.location_city,
+                    contact_number: account.contact_number,
                 }
             });
         } catch (error) {
@@ -48,6 +48,7 @@ export const authController = {
 
         const token = sign_jwt({ id: account.id, email: account.email });
 
+        const city = account.city_id ? await City.findOne({ where: {id: account.city_id} }) : null
         return res.status(200).json({
             message: 'Login successful',
             token,
@@ -56,6 +57,12 @@ export const authController = {
                 name: account.name,
                 email: account.email,
                 role: account.role,
+                city_id: account.city_id,
+                location_barangay: account.location_barangay,
+                location_city: account.location_city,
+                contact_number: account.contact_number,
+                birthdate: account.birthdate,
+                city
             }
         });
     },
@@ -72,5 +79,49 @@ export const authController = {
                 role: account.role,
             }
         });
+    },
+
+    async birthdateLogin(req: Request, res: Response) {
+        try {
+            const { email, birthdate } = req.body;
+
+            const account = await Account.findOne({ where: { email } });
+
+            if (!account) {
+                return res.status(401).json({ message: 'Invalid credentials' });
+            }
+
+            if (!account.birthdate) {
+                return res.status(401).json({ message: 'Invalid credentials or birthdate not set' });
+            }
+
+            const accountBirthdate = new Date(account.birthdate).toISOString().split('T')[0];
+            const inputBirthdate = new Date(birthdate).toISOString().split('T')[0];
+
+            if (accountBirthdate !== inputBirthdate) {
+                return res.status(401).json({ message: 'Invalid credentials' });
+            }
+
+            const token = sign_jwt({ id: account.id, email: account.email });
+
+            return res.status(200).json({
+                message: 'Login successful',
+                token,
+                user: {
+                    id: account.id,
+                    name: account.name,
+                    email: account.email,
+                    role: account.role,
+                    city_id: account.city_id,
+                    location_barangay: account.location_barangay,
+                    location_city: account.location_city,
+                    contact_number: account.contact_number,
+                    birthdate: account.birthdate
+                }
+            });
+        } catch (error) {
+            console.error('Email/Birthday login error:', error);
+            return res.status(500).json({ message: 'Internal server error' });
+        }
     },
 };
