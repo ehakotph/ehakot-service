@@ -3,9 +3,7 @@ import {
     Column,
     DataType,
     Model,
-    BelongsTo,
 } from 'sequelize-typescript';
-import Account from './account.model';
 
 @Table({
     schema: 'public',
