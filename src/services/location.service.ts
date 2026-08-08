@@ -118,11 +118,11 @@ export async function getLocationDetails(lat: number, lon: number): Promise<Loca
         }
 
         const data = await response.json() as Record<string, unknown>;
-        
+        console.log("data :>> ", data)
         const address: Record<string, unknown> | null = data?.address as Record<string, unknown> || null;
         
         const city: string | null = (address?.city || address?.town || address?.municipality || address?.county) as string | null;
-        const barangay: string | null = (address?.neighbourhood || address?.village || address?.suburb || address?.quarter) as string | null;
+        const barangay: string | null = (address?.quarter || address?.neighbourhood || address?.road || address?.amenity) as string | null;
         
         const details = { city, barangay };
         locationDetailsCache.set(cacheKey, details);
