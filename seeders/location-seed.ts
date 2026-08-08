@@ -19,8 +19,9 @@ interface GeoJson {
 async function seed() {
   try {
     await sequelize.authenticate();
+    await sequelize.sync();
 
-    console.log('Connected to database.');
+    console.log('Connected to database and synchronized models.');
 
     const filePath = path.join(
       process.cwd(),

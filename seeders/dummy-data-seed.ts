@@ -1,4 +1,5 @@
 import sequelize from '@/utilities/database';
+import bcryptjs from 'bcryptjs';
 import City from '@/models/public/city.model';
 import Barangay from '@/models/public/barangay.model';
 import Account from '@/models/public/account.model';
@@ -16,7 +17,8 @@ function randomNCRLocation() {
 async function seed() {
     try {
         await sequelize.authenticate();
-        console.log('Connected to database.');
+        await sequelize.sync();
+        console.log('Connected to database and synchronized models.');
 
         const cities = await City.findAll();
         if (cities.length === 0) {
@@ -36,13 +38,15 @@ async function seed() {
         const accountsData: Partial<Account>[] = [];
         const trucksData: Partial<Truck>[] = [];
 
+        const defaultHashedPassword = await bcryptjs.hash('password123', 10);
+
         // Superadmins (2 globally)
         for (let i = 1; i <= 2; i++) {
             accountsData.push({
                 name: `Super Admin ${i}`,
                 role: 'superadmin',
                 email: `superadmin${i}@yopmail.com`,
-                password: 'password123',
+                password: defaultHashedPassword,
                 contact_number: `0912345678${i}`,
             });
         }
@@ -57,7 +61,7 @@ async function seed() {
                     name: `${city.name} Admin ${i}`,
                     role: 'admin',
                     email: `admin${i}-${cityName}@yopmail.com`,
-                    password: 'password123',
+                    password: defaultHashedPassword,
                     city_id: city.id,
                     location_city: city.name,
                     contact_number: `0900${Math.floor(1000000 + Math.random() * 9000000)}`
@@ -70,7 +74,7 @@ async function seed() {
                     name: `${city.name} Driver ${i}`,
                     role: 'driver',
                     email: `driver${i}-${cityName}@yopmail.com`,
-                    password: 'password123',
+                    password: defaultHashedPassword,
                     city_id: city.id,
                     location_city: city.name,
                     contact_number: `0911${Math.floor(1000000 + Math.random() * 9000000)}`
@@ -80,7 +84,7 @@ async function seed() {
             // Trucks (10 per city)
             for (let i = 1; i <= 10; i++) {
                 trucksData.push({
-                    plate_number: `EHA-${Math.floor(1000 + Math.random() * 9000)}`,
+                    plate_number: `EHA-${city.id}-${i}`,
                     city_id: city.id
                 });
             }
@@ -92,7 +96,7 @@ async function seed() {
                     name: `${city.name} User ${i}`,
                     role: 'user',
                     email: `user${i}-${cityName}@yopmail.com`,
-                    password: 'password123',
+                    password: defaultHashedPassword,
                     city_id: city.id,
                     location_city: city.name,
                     location_barangay: randomBrgy,
@@ -105,7 +109,7 @@ async function seed() {
         console.log('Creating accounts...');
         for (const acc of accountsData) {
             await Account.findOrCreate({
-                where: { email: acc.email! },
+                where: { email: acc.email!.toLowerCase().trim() },
                 defaults: acc as Account,
             });
         }
@@ -149,8 +153,8 @@ async function seed() {
                     location_barangay: user.location_barangay || 'Unknown',
                     status: status,
                     confirmation_date: status === 'COLLECTED' ? updateDate : null,
-                    createdAt: date,
-                    updatedAt: updateDate
+                    created_at: date,
+                    updated_at: updateDate
                 });
             }
         }
@@ -165,8 +169,8 @@ async function seed() {
                 truck_id: trucksInCity.length ? trucksInCity[Math.floor(Math.random() * trucksInCity.length)]?.id ?? null : null,
                 barangays: [r.location_barangay],
                 status: 'COMPLETED' as const,
-                date_of_week: r.updatedAt.getDay(),
-                date: r.updatedAt,
+                date_of_week: r.updated_at.getDay(),
+                date: r.updated_at,
                 from: "08:00",
                 to: "17:00"
             };
@@ -188,8 +192,8 @@ async function seed() {
             delete report._city_id;
         }
 
-        await GarbageReport.bulkCreate(reportsData);
-        console.log(`Created ${reportsData.length} garbage reports.`);
+        const createdGarbageReports = await GarbageReport.bulkCreate(reportsData);
+        console.log(`Created ${createdGarbageReports.length} garbage reports.`);
 
         process.exit(0);
     } catch (err) {

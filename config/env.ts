@@ -54,6 +54,9 @@ const envSchema = z.object({
     .optional()
     .default('')
     .describe('The SMTP password'),
+
+  GEMINI_API_KEY: z.string()
+    .optional()
 });
 
 export type Env = z.infer<typeof envSchema>;

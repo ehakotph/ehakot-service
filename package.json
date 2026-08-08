@@ -34,6 +34,8 @@
     "typescript-eslint": "^8.65.0"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.39",
+    "ai": "^7.0.58",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "cors": "^2.8.6",

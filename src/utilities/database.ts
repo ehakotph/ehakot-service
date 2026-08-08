@@ -35,12 +35,11 @@ const sequelize: Sequelize = new Sequelize(database_url, {
     },
 });
 
-// sequelize.sync({ force: true })
-
 export async function testDatabaseConnection(): Promise<void> {
     try {
         await sequelize.authenticate();
-        console.info(`Database Connection: ${database_url}`);
+        await sequelize.sync();
+        console.info(`Database Connection & Sync Successful: ${database_url}`);
     } catch (error: unknown) {
         console.error('Unable to connect to the database', error);
     }
