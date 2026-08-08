@@ -14,5 +14,6 @@ router.use('/accounts', accountRouter);
 router.use('/barangays', cityRouter)
 router.use('/notifications', notificationRouter)
 router.use('/trucks', truckRouter)
+router.use('/cities', cityRouter)
 
 export default router;
