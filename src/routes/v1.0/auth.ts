@@ -1,6 +1,6 @@
 import { authController } from '../../controllers/auth.controller';
 import validateResource from '@/middlewares/validate-resource';
-import { createAccountSchema, localAuthSchema } from '@/schemas/auth.schema';
+import { createAccountSchema, localAuthSchema, birthdateLoginSchema } from '@/schemas/auth.schema';
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import passport from 'passport';
 
@@ -32,6 +32,6 @@ authRouter.post(
 
 authRouter.get('/me', passport.authenticate('jwt', { session: false }), authController.me);
 
-authRouter.post('/birthdate-login', authController.birthdateLogin);
+authRouter.post('/birthdate-login', validateResource(birthdateLoginSchema), authController.birthdateLogin);
 
 export default authRouter;
