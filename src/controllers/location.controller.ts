@@ -124,7 +124,7 @@ export const updateDriverLocation = async (req: Request, res: Response): Promise
         // Send email and create notification for nearby users
         nearbyUsers.forEach(user => {
             const title = 'Garbage Collector Nearby';
-            const message = `A garbage collector (Driver ID: ${driver_id}) is currently ${Number(user.distance).toFixed(2)} meters away from your location.`;
+            const message = `A garbage collector is currently ${Number(user.distance).toFixed(2)} meters away from your location.`;
 
             if (user.email) {
                 sendTemplateEmail({
